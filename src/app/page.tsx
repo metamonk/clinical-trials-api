@@ -203,7 +203,7 @@ export default function ApiTesterPage() {
       errorInfo.requestParams = JSON.stringify(queryParams, null, 2);
 
       if (axios.isAxiosError(err)) {
-        const axiosError = err as AxiosError<any>;
+        const axiosError = err as AxiosError<unknown>;
         errorInfo.message = axiosError.message;
         if (axiosError.response) {
           errorInfo.message = `Request failed with status ${axiosError.response.status}: ${axiosError.response.statusText}`;
