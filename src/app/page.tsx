@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import ResponseDisplay from "@/components/ResponseDisplay";
 import ErrorDisplay, { ErrorInfo } from "@/components/ErrorDisplay";
-import { apiEndpointConfigurations, ApiConfig, ApiParameter, clinicalTrialsApiBaseUrl } from "@/lib/apiConfigs";
+import { apiEndpointConfigurations, ApiConfig, clinicalTrialsApiBaseUrl } from "@/lib/apiConfigs";
 import EndpointAccordionItem from "@/components/EndpointAccordionItem";
 import { ClinicalTrialEnumObject } from "@/lib/types";
 
@@ -16,9 +16,9 @@ export default function ApiTesterPage() {
   const [selectedEndpointId, setSelectedEndpointId] = useState<string | null>(
     apiEndpointConfigurations.length > 0 ? apiEndpointConfigurations[0].id : null
   );
-  const [formValues, setFormValues] = useState<Record<string, Record<string, any>>>({}); // { endpointId: { paramId: value } }
+  const [formValues, setFormValues] = useState<Record<string, Record<string, string | number | string[] | boolean>>>({}); // { endpointId: { paramId: value } }
   
-  const [currentResponse, setCurrentResponse] = useState<any | null>(null);
+  const [currentResponse, setCurrentResponse] = useState<unknown | null>(null);
   const [currentError, setCurrentError] = useState<ErrorInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [totalResults, setTotalResults] = useState<number | null>(null);
@@ -26,11 +26,11 @@ export default function ApiTesterPage() {
   // State for globally fetched enums (needed for dynamic selects in forms)
   const [clinicalTrialsEnums, setClinicalTrialsEnums] = useState<ClinicalTrialEnumObject[]>([]);
   const [loadingEnums, setLoadingEnums] = useState(true);
-  const [errorEnums, setErrorEnums] = useState<any>(null);
+  const [errorEnums, setErrorEnums] = useState<Error | null>(null);
 
   // Initialize formValues for all endpoints on mount or when configs change
   const initializeFormValues = useCallback((configs: ApiConfig[]) => {
-    const initialValues: Record<string, Record<string, any>> = {};
+    const initialValues: Record<string, Record<string, string | number | string[] | boolean>> = {};
     configs.forEach(endpoint => {
       initialValues[endpoint.id] = {};
       endpoint.parameters.forEach(param => {
@@ -56,10 +56,10 @@ export default function ApiTesterPage() {
     const fetchEnums = async () => {
       setLoadingEnums(true);
       try {
-        const response = await axios.get(`${clinicalTrialsApiBaseUrl}/api/v2/studies/enums`);
+        const response = await axios.get<{enums: ClinicalTrialEnumObject[]} | ClinicalTrialEnumObject[]>(`${clinicalTrialsApiBaseUrl}/api/v2/studies/enums`);
         // The API returns an object with a single key "enums" which is an array.
         // We should extract this array.
-        if (response.data && Array.isArray(response.data.enums)) {
+        if (response.data && typeof response.data === 'object' && 'enums' in response.data && Array.isArray(response.data.enums)) {
           setClinicalTrialsEnums(response.data.enums);
         } else if (Array.isArray(response.data)) { // Fallback if data is directly an array
             setClinicalTrialsEnums(response.data);
@@ -70,7 +70,11 @@ export default function ApiTesterPage() {
         setErrorEnums(null);
       } catch (error) {
         console.error("Error fetching enums:", error);
-        setErrorEnums(error);
+        if (error instanceof Error) {
+            setErrorEnums(error);
+        } else {
+            setErrorEnums(new Error(String(error)));
+        }
         setClinicalTrialsEnums([]);
       } finally {
         setLoadingEnums(false);
@@ -79,7 +83,7 @@ export default function ApiTesterPage() {
     fetchEnums();
   }, []);
 
-  const handleInputChange = (endpointId: string, paramId: string, value: any) => {
+  const handleInputChange = (endpointId: string, paramId: string, value: string | number | string[]) => {
     setFormValues(prev => ({
       ...prev,
       [endpointId]: {
@@ -119,7 +123,7 @@ export default function ApiTesterPage() {
 
     let url = `${endpointConfig.baseApiUrl}${endpointConfig.endpointPath}`;
     const queryParams: Record<string, string> = {};
-    const currentEndpointFormValues = formValues[endpointId] || {};
+    const currentEndpointFormValues: Record<string, string | number | string[] | boolean> = formValues[endpointId] || {};
 
     // Path parameter substitution
     endpointConfig.parameters.filter(p => p.paramType === 'path').forEach(pathParam => {
@@ -136,7 +140,7 @@ export default function ApiTesterPage() {
 
     // Construct query parameters
     endpointConfig.parameters.filter(p => p.paramType === 'query' && p.id !== 'studyPhase').forEach(param => {
-      let value = currentEndpointFormValues[param.id];
+      const value = currentEndpointFormValues[param.id];
       if (value !== undefined && value !== '') {
         if (Array.isArray(value)) {
           if (value.length > 0) queryParams[param.id] = value.join(',');
@@ -183,7 +187,7 @@ export default function ApiTesterPage() {
     try {
       console.log("Request URL:", url);
       console.log("Request Params:", queryParams);
-      const res = await axios.get(url, { params: queryParams });
+      const res = await axios.get<{ totalCount?: number; [key: string]: unknown }>(url, { params: queryParams });
       setCurrentResponse(res.data);
       if (res.data && res.data.totalCount !== undefined) {
         setTotalResults(res.data.totalCount);
@@ -211,8 +215,6 @@ export default function ApiTesterPage() {
       setIsLoading(false);
     }
   };
-
-  const currentConfig = apiEndpointConfigurations.find(c => c.id === selectedEndpointId);
 
   if (loadingEnums) {
     return <div className="p-4">Loading API enumerations...</div>;

@@ -7,11 +7,11 @@ import { getOptionsForParameter } from "@/lib/utils";
 
 interface EndpointAccordionItemProps {
   config: ApiConfig;
-  formValuesForEndpoint: Record<string, any>;
+  formValuesForEndpoint: Record<string, string | number | string[] | boolean>;
   clinicalTrialsEnums: ClinicalTrialEnumObject[];
   loadingEnums: boolean;
   isLoading: boolean; // For the submit button
-  onInputChange: (endpointId: string, paramId: string, value: any) => void;
+  onInputChange: (endpointId: string, paramId: string, value: string | number | string[]) => void;
   onCheckboxChange: (endpointId: string, paramId: string, optionValue: string) => void;
   onSubmit: (endpointId: string) => void;
 }

@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 interface ParameterInputProps {
   endpointId: string;
   param: ApiParameter;
-  value: any;
+  value: string | number | string[];
   options: Array<{ value: string; label: string }>;
-  onInputChange: (endpointId: string, paramId: string, value: any) => void;
+  onInputChange: (endpointId: string, paramId: string, value: string | number | string[]) => void;
   onCheckboxChange: (endpointId: string, paramId: string, optionValue: string) => void;
 }
 
@@ -32,7 +32,7 @@ export default function ParameterInput({
       {param.type === 'text' && (
         <Input 
           id={inputId}
-          value={value || ''} // Ensure value is not null/undefined for controlled input
+          value={typeof value === 'string' || typeof value === 'number' ? String(value) : ''}
           onChange={(e) => onInputChange(endpointId, param.id, e.target.value)}
           placeholder={param.placeholder}
           className="text-gray-900"
@@ -42,7 +42,7 @@ export default function ParameterInput({
         <Input 
           type="number"
           id={inputId}
-          value={value || ''} // Ensure value is not null/undefined
+          value={typeof value === 'number' ? value : typeof value === 'string' && value !== '' ? Number(value) : ''}
           onChange={(e) => onInputChange(endpointId, param.id, e.target.valueAsNumber === undefined || isNaN(e.target.valueAsNumber) ? '' : e.target.valueAsNumber)}
           placeholder={param.placeholder}
           className="text-gray-900"
@@ -50,14 +50,13 @@ export default function ParameterInput({
       )}
       {param.type === 'select' && (
         <Select 
-            value={String(value || '')} // Ensure value is string and not null/undefined
+            value={String(value || '')}
             onValueChange={(val) => onInputChange(endpointId, param.id, val)}
         >
           <SelectTrigger className="text-gray-900">
             <SelectValue placeholder={param.placeholder || 'Select an option'} />
           </SelectTrigger>
           <SelectContent>
-            {/* Add placeholder/default option if applicable from param config or a generic one */}
             {param.placeholder && !options.find(opt => opt.value === '') && (
                  <SelectItem value="" disabled>{param.placeholder}</SelectItem>
             )}
@@ -70,7 +69,7 @@ export default function ParameterInput({
       {param.type === 'textarea' && (
         <Textarea
           id={inputId}
-          value={value || ''} // Ensure value is not null/undefined
+          value={typeof value === 'string' ? value : ''}
           onChange={(e) => onInputChange(endpointId, param.id, e.target.value)}
           rows={3}
           placeholder={param.placeholder}
@@ -84,7 +83,7 @@ export default function ParameterInput({
               <Input
                 type="checkbox"
                 id={`${inputId}-${option.value}`}
-                name={param.id} // Group checkboxes by param.id
+                name={param.id}
                 value={option.value}
                 checked={(Array.isArray(value) ? value : []).includes(option.value)}
                 onChange={() => onCheckboxChange(endpointId, param.id, option.value)}
