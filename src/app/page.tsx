@@ -226,7 +226,7 @@ export default function ApiTesterPage() {
   return (
     <div className="container mx-auto p-6 max-w-full space-y-6"> {/* Full width */} 
       <div className="text-center space-y-2 mb-8">
-        <h1 className="text-3xl font-bold">ClinicalTrials.gov API Tester</h1>
+        <h1 className="text-3xl font-bold">ClinicalTrials.gov API Explorer</h1>
         <p className="text-muted-foreground">Explore ClinicalTrials.gov API endpoints.</p>
       </div>
 
