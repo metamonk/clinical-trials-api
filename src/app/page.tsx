@@ -260,7 +260,7 @@ export default function ApiTesterPage() {
               <CollapsibleContent>
                 <EndpointAccordionItem
                   config={config}
-                  formValuesForEndpoint={formValues[config.id] || {}}
+                  formValuesForEndpoint={formValues[config.id] || ({} as Record<string, string | number | string[] | boolean>)}
                   clinicalTrialsEnums={clinicalTrialsEnums}
                   loadingEnums={loadingEnums}
                   isLoading={isLoading}
