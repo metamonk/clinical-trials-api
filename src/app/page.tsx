@@ -138,18 +138,27 @@ export default function ApiTesterPage() {
       url = url.replace(`{${pathParam.id}}`, encodeURIComponent(String(value)));
     });
 
-    // Construct query parameters
-    endpointConfig.parameters.filter(p => p.paramType === 'query' && p.id !== 'studyPhase').forEach(param => {
-      const value = currentEndpointFormValues[param.id];
-      if (value !== undefined && value !== '') {
-        if (Array.isArray(value)) {
-          if (value.length > 0) queryParams[param.id] = value.join(',');
-        } else {
-          queryParams[param.id] = String(value);
+    // Construct query parameters from non-special-handling fields
+    endpointConfig.parameters
+      .filter(p => 
+        p.paramType === 'query' && 
+        p.id !== 'studyPhase' && // Handled separately for filter.advanced
+        p.id !== 'studyTypeForAdvancedFilter' && // Handled separately for filter.advanced
+        p.id !== 'filter.advanced' // Base filter.advanced is handled explicitly next
+      )
+      .forEach(param => {
+        const value = currentEndpointFormValues[param.id];
+        if (value !== undefined && value !== '') {
+          if (Array.isArray(value)) {
+            if (value.length > 0) queryParams[param.id] = value.join(',');
+          } else {
+            queryParams[param.id] = String(value);
+          }
         }
-      }
-    });
+      });
     
+    let existingAdvancedFilter = String(currentEndpointFormValues['filter.advanced'] || '');
+
     // Special handling for studyPhase to build filter.advanced
     if (endpointId === 'search_studies') {
       const selectedPhases = currentEndpointFormValues['studyPhase'] as string[] || [];
@@ -161,9 +170,6 @@ export default function ApiTesterPage() {
           phaseFilterString = `AREA[Phase](${selectedPhases.join(' AND ')})`;
         }
       }
-
-      let existingAdvancedFilter = queryParams['filter.advanced'] || '';
-      
       if (phaseFilterString) {
         if (existingAdvancedFilter) {
           existingAdvancedFilter += ` AND ${phaseFilterString}`;
@@ -171,12 +177,25 @@ export default function ApiTesterPage() {
           existingAdvancedFilter = phaseFilterString;
         }
       }
-      
-      if (existingAdvancedFilter) {
-        queryParams['filter.advanced'] = existingAdvancedFilter;
-      } else {
-        delete queryParams['filter.advanced']; // Remove if empty
+    }
+
+    // Special handling for studyTypeForAdvancedFilter to build filter.advanced
+    if (endpointId === 'search_studies') {
+      const selectedStudyType = currentEndpointFormValues['studyTypeForAdvancedFilter'] as string;
+      if (selectedStudyType && selectedStudyType !== '') {
+        const studyTypeFilterString = `AREA[StudyType]${selectedStudyType}`;
+        if (existingAdvancedFilter) {
+          existingAdvancedFilter += ` AND ${studyTypeFilterString}`;
+        } else {
+          existingAdvancedFilter = studyTypeFilterString;
+        }
       }
+    }
+      
+    if (existingAdvancedFilter) {
+      queryParams['filter.advanced'] = existingAdvancedFilter;
+    } else {
+      delete queryParams['filter.advanced']; // Remove if empty to avoid sending empty param
     }
 
     // Add countTotal=true for /studies endpoint, or if defaultFields includes totalCount implicitly

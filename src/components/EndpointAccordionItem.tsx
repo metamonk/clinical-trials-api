@@ -28,7 +28,7 @@ export default function EndpointAccordionItem({
 }: EndpointAccordionItemProps) {
 
   return (
-    <CardContent className="pt-4 space-y-4 border-t">
+    <CardContent className="pt-4 space-y-4">
       {config.parameters.length > 0 ? (
         config.parameters.map(param => {
           const currentParamOptions = getOptionsForParameter(param, clinicalTrialsEnums, loadingEnums);

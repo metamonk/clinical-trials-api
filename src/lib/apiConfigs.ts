@@ -47,7 +47,7 @@ export const apiEndpointConfigurations: ApiConfig[] = [
         paramType: 'query',
         type: 'textarea',
         placeholder: 'e.g., AREA[Phase]PHASE1 AND AREA[MinimumAge]RANGE[MIN, 18 years]',
-        note: 'Use Essie expression syntax. Phase selections will be added here automatically.'
+        note: 'Use Essie expression syntax. Phase and Study Type selections will be added here automatically.'
       },
       { 
         id: 'filter.overallStatus', 
@@ -73,12 +73,13 @@ export const apiEndpointConfigurations: ApiConfig[] = [
         defaultValue: [],
       },
       {
-        id: 'filter.studyType',
+        id: 'studyTypeForAdvancedFilter',
         label: 'Study Type',
         paramType: 'query',
         type: 'select',
         dynamicEnumSource: 'StudyType',
         defaultValue: '',
+        note: 'Selected Study Type will be added to the Advanced Filter.'
       },
       {
         id: 'studyPhase',
