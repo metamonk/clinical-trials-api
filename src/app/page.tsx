@@ -233,44 +233,47 @@ export default function ApiTesterPage() {
       <div className="flex flex-col md:flex-row md:space-x-6">
         {/* Left Accordion Column */}
         <div className="w-full md:w-1/3 lg:w-2/5 xl:w-1/3 md:flex-shrink-0 mb-6 md:mb-0 space-y-4">
-          {apiEndpointConfigurations.map((config) => (
-            <Collapsible key={config.id} open={selectedEndpointId === config.id} onOpenChange={(isOpen) => {
-              if (isOpen) {
-                setSelectedEndpointId(config.id);
-                // Reset response/error when switching
-                setCurrentResponse(null);
-                setCurrentError(null);
-                setTotalResults(null);
-              } else if (selectedEndpointId === config.id) {
-                // Allow collapsing the currently open one
-                //setSelectedEndpointId(null); // Or keep it selected but collapsed
-              }
-            }}>
-              <CollapsibleTrigger asChild>
-                <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{config.displayName}</CardTitle>
-                      {selectedEndpointId === config.id ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                    </div>
-                    {config.description && <CardDescription className="text-sm mt-1">{config.description}</CardDescription>}
-                  </CardHeader>
-                </Card>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <EndpointAccordionItem
-                  config={config}
-                  formValuesForEndpoint={formValues[config.id] || ({} as Record<string, string | number | string[] | boolean>)}
-                  clinicalTrialsEnums={clinicalTrialsEnums}
-                  loadingEnums={loadingEnums}
-                  isLoading={isLoading}
-                  onInputChange={handleInputChange}
-                  onCheckboxChange={handleCheckboxChange}
-                  onSubmit={handleSubmitRequest}
-                />
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
+          {apiEndpointConfigurations.map((config) => {
+            const currentFormValues: Record<string, string | number | string[] | boolean> = formValues[config.id] || {};
+            return (
+              <Collapsible key={config.id} open={selectedEndpointId === config.id} onOpenChange={(isOpen) => {
+                if (isOpen) {
+                  setSelectedEndpointId(config.id);
+                  // Reset response/error when switching
+                  setCurrentResponse(null);
+                  setCurrentError(null);
+                  setTotalResults(null);
+                } else if (selectedEndpointId === config.id) {
+                  // Allow collapsing the currently open one
+                  //setSelectedEndpointId(null); // Or keep it selected but collapsed
+                }
+              }}>
+                <CollapsibleTrigger asChild>
+                  <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">{config.displayName}</CardTitle>
+                        {selectedEndpointId === config.id ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                      </div>
+                      {config.description && <CardDescription className="text-sm mt-1">{config.description}</CardDescription>}
+                    </CardHeader>
+                  </Card>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <EndpointAccordionItem
+                    config={config}
+                    formValuesForEndpoint={currentFormValues}
+                    clinicalTrialsEnums={clinicalTrialsEnums}
+                    loadingEnums={loadingEnums}
+                    isLoading={isLoading}
+                    onInputChange={handleInputChange}
+                    onCheckboxChange={handleCheckboxChange}
+                    onSubmit={handleSubmitRequest}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
         </div>
 
         {/* Right Response Column */}
