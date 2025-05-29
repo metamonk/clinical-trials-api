@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 interface ParameterInputProps {
   endpointId: string;
   param: ApiParameter;
-  value: string | number | string[];
+  value: string | number | string[] | boolean;
   options: Array<{ value: string; label: string }>;
   onInputChange: (endpointId: string, paramId: string, value: string | number | string[]) => void;
   onCheckboxChange: (endpointId: string, paramId: string, optionValue: string) => void;
@@ -24,6 +24,22 @@ export default function ParameterInput({
 }: ParameterInputProps) {
   const inputId = `${endpointId}-${param.id}`;
 
+  const getStringValueForInput = (val: typeof value): string => {
+    if (typeof val === 'string') return val;
+    if (typeof val === 'number') return String(val);
+    if (typeof val === 'boolean') return '';
+    return '';
+  };
+
+  const getNumberValueForInput = (val: typeof value): number | string => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string' && val !== '') {
+        const num = Number(val);
+        return isNaN(num) ? '' : num;
+    }
+    return '';
+  };
+
   return (
     <div key={param.id} className="space-y-1.5">
       <Label htmlFor={inputId}>{param.label}</Label>
@@ -32,7 +48,7 @@ export default function ParameterInput({
       {param.type === 'text' && (
         <Input 
           id={inputId}
-          value={typeof value === 'string' || typeof value === 'number' ? String(value) : ''}
+          value={getStringValueForInput(value)}
           onChange={(e) => onInputChange(endpointId, param.id, e.target.value)}
           placeholder={param.placeholder}
           className="text-gray-900"
@@ -42,7 +58,7 @@ export default function ParameterInput({
         <Input 
           type="number"
           id={inputId}
-          value={typeof value === 'number' ? value : typeof value === 'string' && value !== '' ? Number(value) : ''}
+          value={getNumberValueForInput(value)}
           onChange={(e) => onInputChange(endpointId, param.id, e.target.valueAsNumber === undefined || isNaN(e.target.valueAsNumber) ? '' : e.target.valueAsNumber)}
           placeholder={param.placeholder}
           className="text-gray-900"
@@ -69,7 +85,7 @@ export default function ParameterInput({
       {param.type === 'textarea' && (
         <Textarea
           id={inputId}
-          value={typeof value === 'string' ? value : ''}
+          value={getStringValueForInput(value)}
           onChange={(e) => onInputChange(endpointId, param.id, e.target.value)}
           rows={3}
           placeholder={param.placeholder}

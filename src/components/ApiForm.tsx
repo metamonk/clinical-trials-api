@@ -4,8 +4,8 @@ import React from "react";
 import { ApiConfig, ApiParameter } from "@/lib/apiConfigs"; // apiConfigs import (plural) no longer needed
 
 interface ApiFormProps {
-  formValues: Record<string, any>;
-  setFormValues: (values: Record<string, any>) => void;
+  formValues: Record<string, unknown>;
+  setFormValues: (values: Record<string, unknown>) => void;
   handleSubmit: () => void;
   loading: boolean;
   selectedApiConfig: ApiConfig | undefined; // This is now the single config for ClinicalTrials.gov
@@ -64,7 +64,7 @@ export default function ApiForm({
             <input
               type="text"
               id={param.id}
-              value={formValues[param.id] || ''}
+              value={String(formValues[param.id] || '')}
               onChange={(e) => handleInputChange(param.id, e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
               placeholder={param.placeholder}
@@ -74,7 +74,7 @@ export default function ApiForm({
             <input
               type="number"
               id={param.id}
-              value={formValues[param.id] || ''}
+              value={Number(formValues[param.id] || '')}
               onChange={(e) => handleInputChange(param.id, e.target.valueAsNumber === undefined || isNaN(e.target.valueAsNumber) ? '' : e.target.valueAsNumber)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
               placeholder={param.placeholder}
@@ -83,7 +83,7 @@ export default function ApiForm({
           {param.type === 'select' && param.options && (
             <select
               id={param.id}
-              value={formValues[param.id] || param.defaultValue || ''}
+              value={String(formValues[param.id] || param.defaultValue || '')}
               onChange={(e) => handleInputChange(param.id, e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
             >
@@ -97,7 +97,7 @@ export default function ApiForm({
           {param.type === 'textarea' && (
             <textarea
               id={param.id}
-              value={formValues[param.id] || ''}
+              value={String(formValues[param.id] || '')}
               onChange={(e) => handleInputChange(param.id, e.target.value)}
               rows={3} 
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
